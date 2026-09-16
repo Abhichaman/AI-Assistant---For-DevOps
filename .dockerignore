@@ -1,0 +1,11 @@
+.git
+.venv
+__pycache__
+*.pyc
+.env
+.DS_Store
+docs/
+README.md
+run-local.sh
+run-local.ps1
+requirements.txt

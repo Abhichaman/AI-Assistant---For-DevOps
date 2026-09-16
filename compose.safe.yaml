@@ -1,0 +1,12 @@
+services:
+  voiceops:
+    build:
+      context: .
+    container_name: devops-shack-voiceops
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

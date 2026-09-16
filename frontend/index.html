@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DevOps Shack · VoiceOps Assistant</title>
+<style>
+  :root {
+    --bg: #f3f8fc;
+    --bg2: #edf5fb;
+    --card: rgba(255,255,255,0.82);
+    --card-strong: rgba(255,255,255,0.96);
+    --line: rgba(15, 23, 42, 0.08);
+    --text: #0f172a;
+    --muted: #475569;
+    --soft: #64748b;
+    --blue: #0ea5e9;
+    --teal: #14b8a6;
+    --indigo: #4f46e5;
+    --success: #10b981;
+    --danger: #ef4444;
+    --shadow: 0 20px 55px rgba(15, 23, 42, 0.10);
+    --radius: 24px;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    color: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background:
+      radial-gradient(circle at top left, rgba(14,165,233,0.12), transparent 34%),
+      radial-gradient(circle at right bottom, rgba(20,184,166,0.10), transparent 33%),
+      linear-gradient(180deg, var(--bg), var(--bg2));
+  }
+  .shell {
+    max-width: 1380px;
+    margin: 0 auto;
+    padding: 28px;
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 22px;
+  }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .brand-mark {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--blue), var(--indigo));
+    color: white;
+    display: grid;
+    place-items: center;
+    font-size: 19px;
+    font-weight: 800;
+    box-shadow: 0 16px 35px rgba(14,165,233,0.25);
+  }
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--blue);
+    margin-bottom: 4px;
+  }
+  .brand h1 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.1;
+  }
+  .brand p {
+    margin: 5px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+  .badge {
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.76);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.04);
+  }
+  .badge.live { color: #047857; border-color: rgba(16,185,129,0.22); background: rgba(16,185,129,0.08); }
+  .grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 22px;
+  }
+  .panel {
+    border: 1px solid var(--line);
+    background: var(--card);
+    backdrop-filter: blur(20px);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .hero {
+    padding: 28px;
+    display: grid;
+    grid-template-columns: 290px 1fr;
+    gap: 24px;
+    min-height: 480px;
+  }
+  .voice-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    background: linear-gradient(180deg, rgba(14,165,233,0.05), rgba(79,70,229,0.04));
+    border-radius: 24px;
+    border: 1px solid rgba(14,165,233,0.10);
+    padding: 22px;
+  }
+  .orb-wrap {
+    position: relative;
+    width: 230px;
+    height: 230px;
+    display: grid;
+    place-items: center;
+  }
+  .orb-ring,
+  .orb-ring-2 {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(14,165,233,0.14);
+  }
+  .orb-ring { transform: scale(1.05); }
+  .orb-ring-2 { transform: scale(1.18); border-color: rgba(79,70,229,0.12); }
+  .orb {
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 30% 28%, rgba(255,255,255,0.98), rgba(255,255,255,0.38) 18%, transparent 30%),
+      linear-gradient(135deg, rgba(14,165,233,0.98), rgba(20,184,166,0.98), rgba(79,70,229,0.96));
+    box-shadow:
+      inset 0 0 36px rgba(255,255,255,0.30),
+      0 22px 55px rgba(14,165,233,0.22);
+    transition: all .25s ease;
+  }
+  .orb.idle { animation: breathe 4.8s ease-in-out infinite; }
+  .orb.listening { animation: pulse 1.8s ease-in-out infinite; }
+  .orb.thinking { animation: rotateGlow 6s linear infinite; filter: saturate(0.95); }
+  .orb.speaking { animation: speak 1.25s ease-in-out infinite; }
+  @keyframes breathe { 0%,100%{transform: scale(1);} 50%{transform: scale(1.04);} }
+  @keyframes pulse { 0%,100%{transform: scale(1); box-shadow: inset 0 0 36px rgba(255,255,255,0.30), 0 18px 44px rgba(14,165,233,0.18);} 50%{transform: scale(1.09); box-shadow: inset 0 0 36px rgba(255,255,255,0.36), 0 28px 70px rgba(14,165,233,0.26);} }
+  @keyframes speak { 0%,100%{transform: scale(1.05);} 50%{transform: scale(1.16);} }
+  @keyframes rotateGlow { from{transform: rotate(0deg) scale(1.02);} to{transform: rotate(360deg) scale(1.08);} }
+  .live-state {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--soft);
+    text-align: center;
+    min-height: 20px;
+  }
+  .cta {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+  .btn {
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--blue), var(--indigo));
+    color: white;
+    padding: 14px 24px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    box-shadow: 0 16px 35px rgba(14,165,233,0.24);
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:disabled { opacity: 0.75; cursor: not-allowed; }
+  .hint { font-size: 12px; color: var(--soft); text-align: center; line-height: 1.5; }
+  .content {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    gap: 18px;
+  }
+  .hero-copy h2 {
+    margin: 0;
+    font-size: 33px;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+  .hero-copy p {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .capabilities {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 10px;
+  }
+  .capability {
+    border: 1px solid rgba(14,165,233,0.10);
+    background: var(--card-strong);
+    border-radius: 18px;
+    padding: 14px;
+  }
+  .capability strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .capability span {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .section-title {
+    margin: 0 0 12px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--soft);
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .chip {
+    border: 1px solid rgba(79,70,229,0.12);
+    background: rgba(255,255,255,0.90);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .transcript-panel, .activity-panel { padding: 24px; }
+  .transcript-list, .activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 560px;
+    overflow: auto;
+    padding-right: 6px;
+  }
+  .bubble {
+    background: rgba(255,255,255,0.88);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 14px 16px;
+  }
+  .bubble.you { margin-left: 36px; }
+  .bubble.agent { border-color: rgba(14,165,233,0.14); background: rgba(239,249,255,0.84); margin-right: 36px; }
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--soft);
+    font-weight: 800;
+  }
+  .bubble p, .activity-card p, .activity-card pre {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .activity-card {
+    border: 1px solid rgba(20,184,166,0.14);
+    background: rgba(255,255,255,0.92);
+    border-radius: 18px;
+    padding: 16px;
+  }
+  .activity-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #047857;
+  }
+  .activity-status.error { color: var(--danger); }
+  .command {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    overflow-x: auto;
+  }
+  .empty {
+    border: 1px dashed rgba(100,116,139,0.25);
+    border-radius: 18px;
+    padding: 18px;
+    color: var(--soft);
+    font-size: 14px;
+    background: rgba(255,255,255,0.55);
+  }
+  .footer-note {
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--soft);
+    line-height: 1.6;
+  }
+  @media (max-width: 1180px) {
+    .grid { grid-template-columns: 1fr; }
+    .hero { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 720px) {
+    .shell { padding: 16px; }
+    .topbar { flex-direction: column; align-items: flex-start; }
+    .badges { justify-content: flex-start; }
+    .hero-copy h2 { font-size: 26px; }
+    .capabilities { grid-template-columns: 1fr; }
+    .orb-wrap { width: 190px; height: 190px; }
+    .orb { width: 142px; height: 142px; }
+  }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">DS</div>
+        <div>
+          <div class="eyebrow">DevOps Shack</div>
+          <h1>VoiceOps Assistant</h1>
+          <p>Real-time AI voice assistant for DevOps learning, diagnostics and local demo workflows.</p>
+        </div>
+      </div>
+      <div class="badges">
+        <div class="badge live" id="connBadge">● Not connected</div>
+        <div class="badge">Local Demo</div>
+        <div class="badge">Gemini Live</div>
+        <div class="badge">Read-Only Tools</div>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="panel hero">
+        <div class="voice-stage">
+          <div class="orb-wrap">
+            <div class="orb-ring"></div>
+            <div class="orb-ring-2"></div>
+            <div id="orb" class="orb idle"></div>
+          </div>
+          <div id="status" class="live-state">Click Start Live Session to connect the assistant.</div>
+          <div class="cta">
+            <button id="talk" class="btn">🎙 Start Live Session</button>
+            <div class="hint">Use headphones for the best experience. Ask about CPU, memory, disk, local ports or Docker containers.</div>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="hero-copy">
+            <div class="eyebrow">DevOps Demo Project</div>
+            <h2>Talk to your local DevOps assistant in real time.</h2>
+            <p>
+              Built for <strong>DevOps Shack</strong>, this local real-time assistant combines live voice interaction,
+              practical DevOps guidance, and safe read-only diagnostics in one clean demo experience.
+            </p>
+          </div>
+
+          <div class="capabilities">
+            <div class="capability"><strong>System Diagnostics</strong><span>Check CPU, memory and disk usage through safe read-only tools.</span></div>
+            <div class="capability"><strong>Local Health Checks</strong><span>Validate local ports or HTTP endpoints such as localhost:8080.</span></div>
+            <div class="capability"><strong>Docker Awareness</strong><span>Optionally list running containers when Docker CLI/socket access is available.</span></div>
+            <div class="capability"><strong>DevOps Guidance</strong><span>Ask conceptual questions about Jenkins, Kubernetes, CI/CD, Linux and troubleshooting.</span></div>
+          </div>
+
+          <div>
+            <h3 class="section-title">Suggested prompts</h3>
+            <div class="chips" id="promptChips">
+              <button class="chip" data-prompt="What's my CPU usage?">What's my CPU usage?</button>
+              <button class="chip" data-prompt="Check disk space.">Check disk space.</button>
+              <button class="chip" data-prompt="Check localhost port 8080.">Check localhost port 8080.</button>
+              <button class="chip" data-prompt="Show running Docker containers.">Show running Docker containers.</button>
+              <button class="chip" data-prompt="Explain CrashLoopBackOff.">Explain CrashLoopBackOff.</button>
+              <button class="chip" data-prompt="Explain this Jenkins failure approach.">Explain this Jenkins failure approach.</button>
+            </div>
+            <div class="footer-note">Tip: the prompt chips are for inspiration only. Speak the request after starting the live session.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel transcript-panel">
+        <h3 class="section-title">Live conversation</h3>
+        <div id="transcript" class="transcript-list">
+          <div class="empty">Your live transcript will appear here once the session starts.</div>
+        </div>
+      </section>
+
+      <section class="panel activity-panel" style="grid-column: 1 / -1;">
+        <h3 class="section-title">Tool activity & diagnostics</h3>
+        <div id="activity" class="activity-list">
+          <div class="empty">When the assistant uses a tool, the executed command/context and the result summary will appear here.</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+services:
+  voiceops:
+    build:
+      context: .
+    container_name: devops-shack-voiceops
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # Optional demo integration: lets the read-only Docker tool query running containers.
+      # Note: Docker's Unix socket itself is highly privileged; use this only on a trusted local demo machine.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
